@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+#export PYTHYONPATH=../..
+
 import os
 import sys
 from time import time, sleep
@@ -8,6 +10,7 @@ import argparse
 #import contextlib
 import io
 
+import argparse
 #from prompt_toolkit import PromptSession
 #from prompt_toolkit.history import FileHistory
 from panda import Panda
@@ -44,8 +47,8 @@ def cangw_off(panda):
 	panda.set_can_forwarding(0,2)
 	panda.set_can_forwarding(2,0)
 
-def cangw_rx(panda):
-	print("func:",sys._getframe().f_code.co_name)
+def cangw_rx(panda, bus=[0,1,2]):
+	print("func:",sys._getframe().f_code.co_name, "bus:", bus)
 	signal.signal(signal.SIGINT, stop_func)
 	signal.signal(signal.SIGHUP, stop_func)
 	#signal.signal(signal.SIGSTP, stop_func)
@@ -54,17 +57,25 @@ def cangw_rx(panda):
 		msgs = panda.can_recv()
 		for can_id, ts, dat, src in msgs:
 			count += 1
-			#if DEBUG and ( src==int(sys.argv[1]) or int(sys.argv[1]) == 255 ) and can_id == int(sys.argv[2]) :
-			if DEBUG and ( src==int(sys.argv[1]) or int(sys.argv[1]) == 255 ) :
+			if DEBUG and ( src in bus) :
 				print(f'RX>{count}\tbus{src}\t{hex(can_id)}:\t0x{dat.hex()}\t{ts}')
 		sleep(0.005)
 	
 
 if __name__ == "__main__":
+	
+	parser = argparse.ArgumentParser(
+			description="set panda to CAN Gateway mode, send data from bus0 to bus2 and from bus2 to bus0",
+			formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+	parser.add_argument("-b", "--bus", type=int, nargs="+", default=[0,128,1,129,2,130])
+
+	args = parser.parse_args(sys.argv[1:])
+
 	panda = Panda()
 	cangw_init(panda)
 	cangw_on(panda)
-	cangw_rx(panda)
+	cangw_rx(panda, args.bus)
 	cangw_off(panda)
 	panda.close()
 				
