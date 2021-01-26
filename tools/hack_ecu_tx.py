@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-#export PYTHYONPATH=../..
+#Usage:
+#	export PYTHONPATH=../..
 
 import os
 import sys

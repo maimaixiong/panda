@@ -21,7 +21,7 @@ from cereal.services import service_list
 #    sendcan.send(packets.to_bytes())
 #
 
-def recv_timeout(can, channel):
+def recv_timeout(can, ch_list):
     received = False
     r = []
     t = time.time()
@@ -31,7 +31,7 @@ def recv_timeout(can, channel):
 
        if c is not None:
           for msg in c.can:
-             if msg.src == channel:
+             if msg.src in ch_list :
                 r.append(msg)
                 received = True
 
@@ -55,7 +55,7 @@ def main(rx_ch=0, bus_ch="vcan0", bus_inf="socketcan"):
     i = 0
     last_time = 0;
     while True:
-        r = recv_timeout(can_sub, rx_ch)
+        r = recv_timeout(can_sub, [rx_ch, rx_ch+128])
         if len(r):
            i = i + 1
            for m in r:
